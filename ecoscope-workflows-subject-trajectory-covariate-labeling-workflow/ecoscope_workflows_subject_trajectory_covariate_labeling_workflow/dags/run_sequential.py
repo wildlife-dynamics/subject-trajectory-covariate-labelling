@@ -2,13 +2,6 @@
 import os
 from typing import Any
 
-from covariate_labeling_tasks.tasks import export_labeled_table as export_labeled_table
-from covariate_labeling_tasks.tasks import (
-    label_with_covariates as label_with_covariates,
-)
-from covariate_labeling_tasks.tasks import (
-    plot_covariate_timeseries as plot_covariate_timeseries,
-)
 from ecoscope.platform.tasks.config import set_workflow_details as set_workflow_details
 from ecoscope.platform.tasks.filter import (
     get_timezone_from_time_range as get_timezone_from_time_range,
@@ -60,6 +53,15 @@ from ecoscope.platform.tasks.transformation import map_columns as map_columns
 from ecoscope.platform.tasks.transformation import map_values as map_values
 from ecoscope.platform.tasks.transformation import (
     resolve_spatial_feature_groups_for_spatial_groupers as resolve_spatial_feature_groups_for_spatial_groupers,
+)
+from subject_trajectory_covariate_labelling.tasks import (
+    export_labeled_table as export_labeled_table,
+)
+from subject_trajectory_covariate_labelling.tasks import (
+    label_with_covariates as label_with_covariates,
+)
+from subject_trajectory_covariate_labelling.tasks import (
+    plot_covariate_timeseries as plot_covariate_timeseries,
 )
 from wt_contracts import validate as _validate
 from wt_task import task
