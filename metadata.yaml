@@ -1,4 +1,4 @@
-name: Covariate Labeling
+name: Subject Trajectory Covariate Labelling
 
 # at least one author is required
 author:
@@ -7,9 +7,11 @@ author:
     email: "rodney@wildlifedynamics.com"
 
 description: >-
-  Builds a subject trajectory from EarthRanger and labels each segment with Google
-  Earth Engine covariates -- a static image (elevation) and a temporal image collection
-  (NDVI) -- then exports the labeled table as parquet and CSV for downstream analysis.
+  Builds a subject trajectory from EarthRanger and labels each segment with a
+  user-defined list of Google Earth Engine covariates (each either a single image,
+  e.g. elevation, or a time-matched image collection, e.g. NDVI). Shows a covariate
+  time-series plot with an observation rug and optionally exports the labeled table
+  as CSV, Parquet or both.
 
 theory: ""
 

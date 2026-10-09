@@ -65,17 +65,25 @@ from ecoscope.platform.tasks.transformation import (
     resolve_spatial_feature_groups_for_spatial_groupers as resolve_spatial_feature_groups_for_spatial_groupers,
 )
 
-label_with_static_image = create_func_magicmock(  # 🧪
+label_with_covariates = create_func_magicmock(  # 🧪
     anchor="covariate_labeling_tasks.tasks",  # 🧪
-    func_name="label_with_static_image",  # 🧪
+    func_name="label_with_covariates",  # 🧪
 )  # 🧪
 
-label_with_temporal_image_collection = create_func_magicmock(  # 🧪
+export_labeled_table = create_func_magicmock(  # 🧪
     anchor="covariate_labeling_tasks.tasks",  # 🧪
-    func_name="label_with_temporal_image_collection",  # 🧪
+    func_name="export_labeled_table",  # 🧪
 )  # 🧪
-from ecoscope.platform.tasks.io import persist_df as persist_df
+from covariate_labeling_tasks.tasks import (
+    plot_covariate_timeseries as plot_covariate_timeseries,
+)
+from ecoscope.platform.tasks.groupby import split_groups as split_groups
+from ecoscope.platform.tasks.io import persist_text as persist_text
+from ecoscope.platform.tasks.results import (
+    create_plot_widget_single_view as create_plot_widget_single_view,
+)
 from ecoscope.platform.tasks.results import gather_dashboard as gather_dashboard
+from ecoscope.platform.tasks.results import merge_widget_views as merge_widget_views
 
 
 def main(params: dict[str, Any], validate_params_schema: bool = True):
@@ -455,34 +463,8 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .call()
     )
 
-    label_static = (
-        task(label_with_static_image)
-        # 🧪 validation omitted for mocked IO task (returns pre-loaded example data)
-        .set_task_instance_id("label_static")
-        .handle_errors()
-        .with_tracing()
-        .skipif(
-            conditions=[
-                any_is_empty_df,
-                any_dependency_skipped,
-            ],
-            unpack_depth=1,
-        )
-        .partial(
-            client=gee_client_name,
-            df=map_subject_sex,
-            bands=["elevation"],
-            reducer="mean",
-            scale=30,
-            df_chunk_size=5000,
-            column_prefix="",
-            **(params.get("label_static") or {}),
-        )
-        .call()
-    )
-
     label_covariates = (
-        task(label_with_temporal_image_collection)
+        task(label_with_covariates)
         # 🧪 validation omitted for mocked IO task (returns pre-loaded example data)
         .set_task_instance_id("label_covariates")
         .handle_errors()
@@ -496,13 +478,8 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         )
         .partial(
             client=gee_client_name,
-            df=label_static,
-            time_column="segment_start",
-            column_prefix="",
-            scale=500,
+            df=map_subject_sex,
             df_chunk_size=5000,
-            bands=["NDVI"],
-            reducer="mean",
             **(params.get("label_covariates") or {}),
         )
         .call()
@@ -537,10 +514,10 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         .call()
     )
 
-    persist_traj_parquet = (
-        task(persist_df)
-        .validate()
-        .set_task_instance_id("persist_traj_parquet")
+    export_table = (
+        task(export_labeled_table)
+        # 🧪 validation omitted for mocked IO task (returns pre-loaded example data)
+        .set_task_instance_id("export_table")
         .handle_errors()
         .with_tracing()
         .skipif(
@@ -552,18 +529,17 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         )
         .partial(
             df=clean_traj,
+            filename="trajectory_covariates",
             root_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
-            filename="trajectories",
-            filetype="parquet",
-            **(params.get("persist_traj_parquet") or {}),
+            **(params.get("export_table") or {}),
         )
         .call()
     )
 
-    export_table_cols = (
-        task(map_columns)
+    split_covariate_groups = (
+        task(split_groups)
         .validate()
-        .set_task_instance_id("export_table_cols")
+        .set_task_instance_id("split_covariate_groups")
         .handle_errors()
         .with_tracing()
         .skipif(
@@ -575,19 +551,16 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         )
         .partial(
             df=clean_traj,
-            drop_columns=["geometry"],
-            retain_columns=[],
-            rename_columns={},
-            raise_if_not_found=False,
-            **(params.get("export_table_cols") or {}),
+            groupers=resolved_groupers,
+            **(params.get("split_covariate_groups") or {}),
         )
         .call()
     )
 
-    persist_traj_csv = (
-        task(persist_df)
+    covariate_plot = (
+        task(plot_covariate_timeseries)
         .validate()
-        .set_task_instance_id("persist_traj_csv")
+        .set_task_instance_id("covariate_plot")
         .handle_errors()
         .with_tracing()
         .skipif(
@@ -598,11 +571,69 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
             unpack_depth=1,
         )
         .partial(
-            df=export_table_cols,
+            time_column="segment_start",
+            title="Covariate time series",
+            covariate_columns=None,
+            **(params.get("covariate_plot") or {}),
+        )
+        .mapvalues(argnames=["df"], argvalues=split_covariate_groups)
+    )
+
+    covariate_plot_url = (
+        task(persist_text)
+        .validate()
+        .set_task_instance_id("covariate_plot_url")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(
             root_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
-            filename="trajectory_stats",
-            filetype="csv",
-            **(params.get("persist_traj_csv") or {}),
+            **(params.get("covariate_plot_url") or {}),
+        )
+        .mapvalues(argnames=["text"], argvalues=covariate_plot)
+    )
+
+    covariate_plot_widget_views = (
+        task(create_plot_widget_single_view)
+        .validate()
+        .set_task_instance_id("covariate_plot_widget_views")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                never,
+            ],
+            unpack_depth=1,
+        )
+        .partial(
+            title="Covariate time series",
+            **(params.get("covariate_plot_widget_views") or {}),
+        )
+        .map(argnames=["view", "data"], argvalues=covariate_plot_url)
+    )
+
+    widget_covariate_plot = (
+        task(merge_widget_views)
+        .validate()
+        .set_task_instance_id("widget_covariate_plot")
+        .handle_errors()
+        .with_tracing()
+        .skipif(
+            conditions=[
+                any_is_empty_df,
+                any_dependency_skipped,
+            ],
+            unpack_depth=1,
+        )
+        .partial(
+            widgets=covariate_plot_widget_views,
+            **(params.get("widget_covariate_plot") or {}),
         )
         .call()
     )
@@ -622,7 +653,7 @@ def main(params: dict[str, Any], validate_params_schema: bool = True):
         )
         .partial(
             details=workflow_details,
-            widgets=[],
+            widgets=[widget_covariate_plot],
             groupers=resolved_groupers,
             time_range=time_range,
             **(params.get("covariate_dashboard") or {}),

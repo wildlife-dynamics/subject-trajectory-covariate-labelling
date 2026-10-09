@@ -40,13 +40,13 @@ ARTIFACTS = Path(__file__).parent.parent
 SNAPSHOT_DIRNAME = ARTIFACTS.parent / "__results_snapshots__"
 SNAPSHOT_DIFF_OUTPUT_DIRNAME = ARTIFACTS.parent / "__diff_output__"
 TEST_CASES_YAML = ARTIFACTS.parent / "test-cases.yaml"
-MATCHSPEC_OVERRIDE = "ecoscope-workflows-covariate-labeling-workflow"
+MATCHSPEC_OVERRIDE = "ecoscope-workflows-subject-trajectory-covariate-labeling-workflow"
 RESULTS_ENV_VAR = "ECOSCOPE_WORKFLOWS_RESULTS"
 IO_TASKS_IMPORTABLE_REFERENCES = [
     "ecoscope.platform.tasks.io.get_subjectgroup_observations",
     "ecoscope.platform.tasks.io.get_spatial_features_group",
-    "covariate_labeling_tasks.tasks.label_with_static_image",
-    "covariate_labeling_tasks.tasks.label_with_temporal_image_collection",
+    "covariate_labeling_tasks.tasks.label_with_covariates",
+    "covariate_labeling_tasks.tasks.export_labeled_table",
 ]
 
 yaml = ruamel.yaml.YAML(typ="safe")

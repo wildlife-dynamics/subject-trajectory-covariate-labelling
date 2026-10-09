@@ -83,36 +83,20 @@
       "description": "Choose the period of time to analyze.",
       "title": "Time Range"
     },
-    "Subject Group": {
-      "type": "object",
-      "description": "Choose a subject group to analyze",
-      "ecoscope:task_group": true,
+    "subject_obs": {
+      "additionalProperties": false,
       "properties": {
-        "subject_obs": {
-          "additionalProperties": false,
-          "properties": {
-            "subject_group_name": {
-              "title": "Subject Group Name",
-              "type": "string",
-              "description": "\u26a0\ufe0f The use of a group with mixed subtypes could lead to unexpected results",
-              "ecoscope:transform": [
-                {
-                  "transformer": "EarthRangerEnumResolver",
-                  "transformer_kws": {
-                    "type": "subject_group_name",
-                    "depends_on": "properties.er_client_name.properties.data_source.properties.name"
-                  }
-                }
-              ]
-            }
-          },
-          "required": [
-            "subject_group_name"
-          ],
-          "type": "object",
-          "title": ""
+        "subject_group_name": {
+          "title": "Subject Group Name",
+          "type": "string",
+          "description": "\u26a0\ufe0f The use of a group with mixed subtypes could lead to unexpected results"
         }
-      }
+      },
+      "required": [
+        "subject_group_name"
+      ],
+      "type": "object",
+      "title": ""
     },
     "groupers": {
       "additionalProperties": false,
@@ -135,16 +119,7 @@
           },
           "title": " ",
           "type": "array",
-          "description": "            Specify how the data should be grouped to create the views for your dashboard.\n            This field is optional; if left blank, all the data will appear in a single view.\n            ",
-          "ecoscope:transform": [
-            {
-              "transformer": "EarthRangerEnumResolver",
-              "transformer_kws": {
-                "type": "spatial_feature_group",
-                "depends_on": "properties.er_client_name.properties.data_source.properties.name"
-              }
-            }
-          ]
+          "description": "            Specify how the data should be grouped to create the views for your dashboard.\n            This field is optional; if left blank, all the data will appear in a single view.\n            "
         }
       },
       "type": "object",
@@ -177,36 +152,47 @@
       "type": "object",
       "title": "Trajectory Segment Filter"
     },
-    "label_static": {
-      "additionalProperties": false,
-      "properties": {
-        "image_id": {
-          "default": "USGS/SRTMGL1_003",
-          "title": "Image Id",
-          "type": "string"
-        }
-      },
-      "required": [],
-      "type": "object",
-      "title": "Label segments with a static image covariate (GEE)"
-    },
     "label_covariates": {
       "additionalProperties": false,
       "properties": {
-        "image_collection_id": {
-          "default": "MODIS/061/MYD13A1",
-          "title": "Image Collection Id",
-          "type": "string"
-        },
-        "image_stack": {
-          "default": 0,
-          "title": "Image Stack",
-          "type": "integer"
+        "covariates": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/StaticImageCovariate"
+              },
+              {
+                "$ref": "#/$defs/ImageCollectionCovariate"
+              }
+            ]
+          },
+          "title": "Covariates",
+          "type": "array"
         }
       },
       "required": [],
       "type": "object",
-      "title": "Label trajectory segments with NDVI (GEE temporal)"
+      "title": "Label trajectory segments with covariates (GEE)"
+    },
+    "export_table": {
+      "additionalProperties": false,
+      "properties": {
+        "export_format": {
+          "default": "both",
+          "enum": [
+            "both",
+            "csv",
+            "parquet",
+            "none"
+          ],
+          "title": "Export Format",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object",
+      "title": "Export labeled table (CSV / Parquet / both)"
     }
   },
   "$defs": {
@@ -328,21 +314,7 @@
       "properties": {
         "index_name": {
           "title": "Category",
-          "type": "string",
-          "oneOf": [
-            {
-              "const": "subject_name",
-              "title": "Subject Name"
-            },
-            {
-              "const": "subject_subtype",
-              "title": "Subject Subtype"
-            },
-            {
-              "const": "subject_sex",
-              "title": "Subject Sex"
-            }
-          ]
+          "type": "string"
         }
       },
       "required": [
@@ -398,6 +370,114 @@
       },
       "title": "TrajectorySegmentFilter",
       "type": "object"
+    },
+    "ImageCollectionCovariate": {
+      "description": "One covariate sampled from a GEE image collection at the time closest to each segment (e.g. NDVI).",
+      "properties": {
+        "name": {
+          "description": "Name for this covariate's column in the output, e.g. 'ndvi'.",
+          "title": "Name",
+          "type": "string"
+        },
+        "image_collection_id": {
+          "default": "MODIS/061/MYD13A1",
+          "description": "Full Earth Engine ImageCollection asset ID (a path, NOT a band name), e.g. 'MODIS/061/MYD13A1'.",
+          "title": "Image Collection Id",
+          "type": "string"
+        },
+        "band": {
+          "default": "NDVI",
+          "description": "Band to sample from the collection, e.g. 'NDVI'.",
+          "title": "Band",
+          "type": "string"
+        },
+        "time_column": {
+          "default": "segment_start",
+          "description": "Datetime column used to pick the temporally closest image, e.g. 'segment_start'.",
+          "title": "Time Column",
+          "type": "string"
+        },
+        "reducer": {
+          "default": "mean",
+          "description": "Region reducer per segment (mean, median, mode, min, max, sum, stdDev, first).",
+          "title": "Reducer",
+          "type": "string"
+        },
+        "scale": {
+          "default": 500.0,
+          "description": "Sampling scale in metres (MODIS MYD13A1 is 500 m).",
+          "title": "Scale",
+          "type": "number"
+        },
+        "buffer_m": {
+          "default": 250.0,
+          "description": "Buffer each segment by this many metres before sampling, to recover NDVI for very short/stationary segments and masked edges. 0 disables.",
+          "title": "Buffer M",
+          "type": "number"
+        },
+        "scale_factor": {
+          "default": 1.0,
+          "description": "Multiply sampled values by this constant, e.g. 0.0001 to turn raw MODIS NDVI into true NDVI (0-1). 1.0 keeps raw values.",
+          "title": "Scale Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Image Collection",
+      "type": "object"
+    },
+    "StaticImageCovariate": {
+      "description": "One covariate sampled from a single GEE image (e.g. elevation).",
+      "properties": {
+        "name": {
+          "description": "Name for this covariate's column in the output, e.g. 'elevation'.",
+          "title": "Name",
+          "type": "string"
+        },
+        "image_id": {
+          "default": "USGS/SRTMGL1_003",
+          "description": "Full Earth Engine image asset ID (a path, not a band name), e.g. 'USGS/SRTMGL1_003'.",
+          "title": "Image Id",
+          "type": "string"
+        },
+        "band": {
+          "default": "elevation",
+          "description": "Band to sample from the image, e.g. 'elevation'.",
+          "title": "Band",
+          "type": "string"
+        },
+        "reducer": {
+          "default": "mean",
+          "description": "Region reducer per segment (mean, median, mode, min, max, sum, stdDev, first).",
+          "title": "Reducer",
+          "type": "string"
+        },
+        "scale": {
+          "default": 30.0,
+          "description": "Sampling scale in metres; the image's native resolution is a good default (SRTM is 30 m).",
+          "title": "Scale",
+          "type": "number"
+        },
+        "buffer_m": {
+          "default": 30.0,
+          "description": "Buffer each segment by this many metres before sampling, to recover values for very short/stationary segments. 0 disables.",
+          "title": "Buffer M",
+          "type": "number"
+        },
+        "scale_factor": {
+          "default": 1.0,
+          "description": "Multiply sampled values by this constant (e.g. to apply a product's scale). 1.0 keeps raw values.",
+          "title": "Scale Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "Image",
+      "type": "object"
     }
   },
   "uiSchema": {
@@ -414,60 +494,17 @@
         "timezone"
       ]
     },
-    "label_covariates": {
-      "ui:order": [
-        "image_collection_id",
-        "image_stack"
-      ],
-      "image_collection_id": {
-        "ui:title": "Image collection ID (asset path)",
-        "ui:help": "Full Earth Engine ImageCollection asset ID -- a path, not a band name -- e.g. MODIS/061/MYD13A1. The NDVI band is read from it."
-      },
-      "image_stack": {
-        "ui:title": "Image stack",
-        "ui:help": "How many images to pull around each segment's closest-in-time image. 0 = only the nearest image (one value per segment); higher values use a window and can add rows."
-      }
-    },
     "ui:order": [
       "workflow_details",
       "er_client_name",
       "gee_client_name",
       "time_range",
-      "Subject Group",
+      "subject_obs",
       "groupers",
       "subject_traj",
-      "label_static",
-      "label_covariates"
-    ],
-    "groupers": {
-      "groupers": {
-        "items": {
-          "anyOf": [
-            {
-              "ui:options": {
-                "label": false
-              }
-            },
-            {
-              "ui:options": {
-                "label": false
-              }
-            },
-            {
-              "ui:options": {
-                "label": false
-              }
-            }
-          ]
-        }
-      }
-    },
-    "label_static": {
-      "image_id": {
-        "ui:title": "Static image ID (asset path)",
-        "ui:help": "Full Earth Engine image asset ID -- a path, not a band name -- e.g. USGS/SRTMGL1_003. One static image is sampled per segment (elevation)."
-      }
-    }
+      "label_covariates",
+      "export_table"
+    ]
   },
   "additionalProperties": false
 }

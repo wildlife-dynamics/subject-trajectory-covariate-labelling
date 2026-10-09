@@ -5,16 +5,16 @@ requires = ["hatchling>=1.18.0,<2", "ruamel.yaml>=0.17.0,<1"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ecoscope-workflows-covariate-labeling-workflow"
+name = "ecoscope-workflows-subject-trajectory-covariate-labeling-workflow"
 dynamic = ["version"]
 requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
-ecoscope-workflows-covariate-labeling-workflow = "ecoscope_workflows_covariate_labeling_workflow.cli:cli"
+ecoscope-workflows-subject-trajectory-covariate-labeling-workflow = "ecoscope_workflows_subject_trajectory_covariate_labeling_workflow.cli:cli"
 
 [tool.hatch.metadata.hooks.custom]
 path = "hatch_build.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["ecoscope_workflows_covariate_labeling_workflow"]
+packages = ["ecoscope_workflows_subject_trajectory_covariate_labeling_workflow"]
