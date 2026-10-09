@@ -1,20 +1,13 @@
-id: covariate_labeling
+id: subject_trajectory_covariate_labeling
 requirements:
 - name: ecoscope-platform
   version: 2.16.1
   channel: https://repo.prefix.dev/ecoscope-workflows/
-  # ecoscope-platform already declares this exact pydeck dependency. it is
-  # re-stated here as a workaround for a known issue. for further detail, see:
-  # https://github.com/wildlife-dynamics/wt/issues/167#issuecomment-4451993697
 - name: pydeck
   version: 0.9.2
   channel: conda-forge
-#- name: covariate-labeling-tasks
-  #path: /Users/la/pgaff/bull_movement/covariate-labeling
-  #editable: true
-
 - name: covariate-labeling-tasks
-  version: 0.2.0
+  version: 0.3.0
   channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 rjsf-overrides:
   properties:
@@ -44,15 +37,6 @@ rjsf-overrides:
         label: false
     - ui:options:
         label: false
-    label_static.image_id:
-      ui:title: Static image ID (asset path)
-      ui:help: Full Earth Engine image asset ID -- a path, not a band name -- e.g. USGS/SRTMGL1_003. One static image is sampled per segment (elevation).
-    label_covariates.image_collection_id:
-      ui:title: Image collection ID (asset path)
-      ui:help: Full Earth Engine ImageCollection asset ID -- a path, not a band name -- e.g. MODIS/061/MYD13A1. The NDVI band is read from it.
-    label_covariates.image_stack:
-      ui:title: Image stack
-      ui:help: How many images to pull around each segment's closest-in-time image. 0 = only the nearest image (one value per segment); higher values use a window and can add rows.
 task-instance-defaults:
   skipif:
     conditions:
@@ -190,31 +174,14 @@ workflow:
       female: female
     missing_values: replace
     replacement: unknown
-- name: Label segments with a static image covariate (GEE)
-  id: label_static
-  task: label_with_static_image
+- name: Label trajectory segments with covariates (GEE)
+  id: label_covariates
+  task: label_with_covariates
   partial:
     client: ${{ workflow.gee_client_name.return }}
     df: ${{ workflow.map_subject_sex.return }}
-    bands:
-    - elevation
-    reducer: mean
-    scale: 30
     df_chunk_size: 5000
-    column_prefix: ''
-- name: Label trajectory segments with NDVI (GEE temporal)
-  id: label_covariates
-  task: label_with_temporal_image_collection
-  partial:
-    client: ${{ workflow.gee_client_name.return }}
-    df: ${{ workflow.label_static.return }}
-    time_column: segment_start
-    column_prefix: ''
-    scale: 500
-    df_chunk_size: 5000
-    bands:
-    - NDVI
-    reducer: mean
+
 - name: Drop patrol columns
   id: clean_traj
   task: map_columns
@@ -228,37 +195,62 @@ workflow:
     retain_columns: []
     rename_columns: {}
     raise_if_not_found: false
-- name: Persist full trajectory table (parquet, with geometry)
-  id: persist_traj_parquet
-  task: persist_df
+- name: Export labeled table (CSV / Parquet / both)
+  id: export_table
+  task: export_labeled_table
   partial:
     df: ${{ workflow.clean_traj.return }}
+    filename: trajectory_covariates
     root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
-    filename: trajectories
-    filetype: parquet
-- name: Drop geometry so the export is a clean tabular CSV
-  id: export_table_cols
-  task: map_columns
+
+- name: Split segments by group
+  id: split_covariate_groups
+  task: split_groups
   partial:
     df: ${{ workflow.clean_traj.return }}
-    drop_columns:
-    - geometry
-    retain_columns: []
-    rename_columns: {}
-    raise_if_not_found: false
-- name: Persist trajectory stats table (CSV, for R)
-  id: persist_traj_csv
-  task: persist_df
+    groupers: ${{ workflow.resolved_groupers.return }}
+- name: Covariate time-series plot (per group)
+  id: covariate_plot
+  task: plot_covariate_timeseries
   partial:
-    df: ${{ workflow.export_table_cols.return }}
+    time_column: segment_start
+    title: Covariate time series
+    covariate_columns: null   # pinned/hidden: auto-detect the labeled covariate columns
+  mapvalues:
+    argnames: df
+    argvalues: ${{ workflow.split_covariate_groups.return }}
+- name: Persist covariate plot (per group)
+  id: covariate_plot_url
+  task: persist_text
+  partial:
     root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
-    filename: trajectory_stats
-    filetype: csv
+  mapvalues:
+    argnames: text
+    argvalues: ${{ workflow.covariate_plot.return }}
+- name: Covariate time-series widget (per group)
+  id: covariate_plot_widget_views
+  task: create_plot_widget_single_view
+  skipif:
+    conditions:
+    - never
+  partial:
+    title: Covariate time series
+  map:
+    argnames:
+    - view
+    - data
+    argvalues: ${{ workflow.covariate_plot_url.return }}
+- name: Merge covariate plot views
+  id: widget_covariate_plot
+  task: merge_widget_views
+  partial:
+    widgets: ${{ workflow.covariate_plot_widget_views.return }}
 - name: Results view
   id: covariate_dashboard
   task: gather_dashboard
   partial:
     details: ${{ workflow.workflow_details.return }}
-    widgets: []
+    widgets:
+    - ${{ workflow.widget_covariate_plot.return }}
     groupers: ${{ workflow.resolved_groupers.return }}
     time_range: ${{ workflow.time_range.return }}

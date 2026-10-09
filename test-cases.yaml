@@ -3,7 +3,7 @@ all-grouper:
   description: Trajectory export with "all" (i.e. no) grouping.
   params:
     workflow_details:
-      name: "Covariate Labeling"
+      name: "Subject Trajectory Covariate Labelling"
       description: "Full trajectory table (step length, speed, NSD) for download, plus NSD chart and summary tiles. No home-range/ETD."
     er_client_name:
       data_source:
@@ -34,7 +34,7 @@ value-grouper:
   description: Trajectory export grouped by subject name.
   params:
     workflow_details:
-      name: "Covariate Labeling"
+      name: "Subject Trajectory Covariate Labelling"
       description: "Full trajectory table for download, per subject."
     er_client_name:
       data_source:
@@ -66,7 +66,7 @@ month-grouper:
   description: Trajectory export with monthly grouping.
   params:
     workflow_details:
-      name: "Covariate Labeling"
+      name: "Subject Trajectory Covariate Labelling"
       description: "Full trajectory table for download, by month."
     er_client_name:
       data_source:
@@ -102,7 +102,7 @@ task-instance-error:
   expected_status_code: 500
   params:
     workflow_details:
-      name: "Covariate Labeling"
+      name: "Subject Trajectory Covariate Labelling"
       description: "Full trajectory table for download."
     er_client_name:
       data_source:
