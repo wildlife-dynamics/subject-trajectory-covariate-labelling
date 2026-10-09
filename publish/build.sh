@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-RECIPES=("release/covariate-labeling-tasks")
+RECIPES=("release/subject-trajectory-covariate-labelling-tasks")
 
 export HATCH_VCS_VERSION=$(hatch version)
 echo "HATCH_VCS_VERSION=$HATCH_VCS_VERSION"
