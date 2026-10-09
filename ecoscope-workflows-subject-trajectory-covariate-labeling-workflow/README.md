@@ -5,8 +5,8 @@
 
 ```yaml
 # fingerprint:
-artifacts_sha256_basic: 873b5e3752a5505ef58c0075a2fe1242cf7a5fad4ba9ba27d0fcc6d970151174
-artifacts_sha256_strict: 0fb75d69fb4a7874f522906af678c3c3d9c3c4bc128a5e3f62cf3c80799567d3
+artifacts_sha256_basic: 59ac143da1db9837bfd2d8eabd91ead61317edd1d3fad3edbfe45e8b58ed3e62
+artifacts_sha256_strict: d799cc46b0e3bccab3dabbf8b7b98429f01cd5cb027c824b6fdff00182f84412
 installed_requirements:
 - channel: https://repo.prefix.dev/ecoscope-workflows/
   name: ecoscope-platform
@@ -14,8 +14,11 @@ installed_requirements:
 - channel: conda-forge
   name: pydeck
   version: {version: ==0.9.2}
+- channel: https://repo.prefix.dev/ecoscope-workflows-custom/
+  name: subject-trajectory-covariate-labelling-tasks
+  version: {version: ==0.3.2}
 params_sha256: 68a359a31e13fd85b2977fb99aed6f54c80311d1ac0e262101c84644d3174e8f
-spec_sha256: 812fb29f0a54dd59b84a3781b197ea4790f6242a51cc2d4497ef85dee4b8b3fa
+spec_sha256: bc2df57d79e3388399a9b0f06edaeddaf4c117015f647ba3712df1df58e7cfe6
 
 ```
 

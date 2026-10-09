@@ -45,8 +45,8 @@ RESULTS_ENV_VAR = "ECOSCOPE_WORKFLOWS_RESULTS"
 IO_TASKS_IMPORTABLE_REFERENCES = [
     "ecoscope.platform.tasks.io.get_subjectgroup_observations",
     "ecoscope.platform.tasks.io.get_spatial_features_group",
-    "covariate_labeling_tasks.tasks.label_with_covariates",
-    "covariate_labeling_tasks.tasks.export_labeled_table",
+    "subject_trajectory_covariate_labelling.tasks.label_with_covariates",
+    "subject_trajectory_covariate_labelling.tasks.export_labeled_table",
 ]
 
 yaml = ruamel.yaml.YAML(typ="safe")

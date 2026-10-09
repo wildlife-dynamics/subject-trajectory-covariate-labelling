@@ -66,17 +66,14 @@ from ecoscope.platform.tasks.transformation import (
 )
 
 label_with_covariates = create_func_magicmock(  # 🧪
-    anchor="covariate_labeling_tasks.tasks",  # 🧪
+    anchor="subject_trajectory_covariate_labelling.tasks",  # 🧪
     func_name="label_with_covariates",  # 🧪
 )  # 🧪
 
 export_labeled_table = create_func_magicmock(  # 🧪
-    anchor="covariate_labeling_tasks.tasks",  # 🧪
+    anchor="subject_trajectory_covariate_labelling.tasks",  # 🧪
     func_name="export_labeled_table",  # 🧪
 )  # 🧪
-from covariate_labeling_tasks.tasks import (
-    plot_covariate_timeseries as plot_covariate_timeseries,
-)
 from ecoscope.platform.tasks.groupby import split_groups as split_groups
 from ecoscope.platform.tasks.io import persist_text as persist_text
 from ecoscope.platform.tasks.results import (
@@ -84,6 +81,9 @@ from ecoscope.platform.tasks.results import (
 )
 from ecoscope.platform.tasks.results import gather_dashboard as gather_dashboard
 from ecoscope.platform.tasks.results import merge_widget_views as merge_widget_views
+from subject_trajectory_covariate_labelling.tasks import (
+    plot_covariate_timeseries as plot_covariate_timeseries,
+)
 
 
 def main(params: dict[str, Any], validate_params_schema: bool = True):

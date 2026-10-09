@@ -23,11 +23,11 @@ packages = ["src/subject_trajectory_covariate_labelling"]
 
 # ---- pixi: local dev + the compile environment (replaces the old pixi.toml) ----
 [tool.pixi.workspace]
-channels = ["https://repo.prefix.dev/ecoscope-workflows/", "conda-forge"]
+channels = ["https://repo.prefix.dev/ecoscope-workflows-custom/", "https://repo.prefix.dev/ecoscope-workflows/", "conda-forge"]
 platforms = ["osx-arm64", "linux-64"]
 
-[tool.pixi.pypi-dependencies]
-subject-trajectory-covariate-labelling-tasks = { path = ".", editable = true }
+[tool.pixi.dependencies]
+subject-trajectory-covariate-labelling-tasks = { version = "==0.3.2", channel = "https://repo.prefix.dev/ecoscope-workflows-custom/" }
 
 [tool.pixi.feature.compile.dependencies]
 wt-compiler = "*"
