@@ -436,6 +436,25 @@
           "title": "Time Column",
           "type": "string"
         },
+        "image_stack": {
+          "default": 0,
+          "description": "Number of images to stack around each segment's time. 0 = just the single nearest-in-time image. N = the nearest image plus the N images before and N after it (2N+1 total), combined per segment with 'stack_reducer'. Increase it to smooth noise or fill gaps where the nearest image is cloud-masked.",
+          "minimum": 0,
+          "title": "Image Stack",
+          "type": "integer"
+        },
+        "stack_reducer": {
+          "default": "mean",
+          "description": "How to combine a multi-image stack (image_stack > 0) into one value per segment, ignoring masked/no-data images. Ignored when image_stack = 0.",
+          "enum": [
+            "mean",
+            "median",
+            "min",
+            "max"
+          ],
+          "title": "Stack Reducer",
+          "type": "string"
+        },
         "reducer": {
           "default": "mean",
           "description": "Region reducer per segment (mean, median, mode, min, max, sum, stdDev, first).",
@@ -455,8 +474,8 @@
           "type": "number"
         },
         "scale_factor": {
-          "default": 1.0,
-          "description": "Multiply sampled values by this constant, e.g. 0.0001 to turn raw MODIS NDVI into true NDVI (0-1). 1.0 keeps raw values.",
+          "default": 0.0001,
+          "description": "Multiply sampled values by this constant. Defaults to 0.0001, which converts raw MODIS NDVI/EVI integers into true NDVI (~ -1..1); set it to 1.0 for data that is already in physical units.",
           "title": "Scale Factor",
           "type": "number"
         }

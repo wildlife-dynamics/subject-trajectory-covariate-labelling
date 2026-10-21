@@ -27,7 +27,7 @@ channels = ["https://repo.prefix.dev/ecoscope-workflows-custom/", "https://repo.
 platforms = ["osx-arm64", "linux-64"]
 
 [tool.pixi.dependencies]
-subject-trajectory-covariate-labelling-tasks = { version = "==0.3.2", channel = "https://repo.prefix.dev/ecoscope-workflows-custom/" }
+subject-trajectory-covariate-labelling-tasks = { version = "==0.3.4", channel = "https://repo.prefix.dev/ecoscope-workflows-custom/" }
 
 [tool.pixi.feature.compile.dependencies]
 wt-compiler = "*"
