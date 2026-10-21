@@ -103,7 +103,15 @@ def _label_gdf_with_img_robust(gdf, img, region_reducer, scale=500.0, buffer_m=0
 
 
 def _label_temporal_by_feature_robust(
-    gdf, img_coll, time_col_name, region_reducer, scale=500.0, buffer_m=0.0
+    gdf,
+    img_coll,
+    time_col_name,
+    region_reducer,
+    scale=500.0,
+    buffer_m=0.0,
+    n_before=0,
+    n_after=0,
+    stack_reducer="mean",
 ):
     """Time-match one image per feature and sample it, buffering SERVER-SIDE.
 
@@ -123,8 +131,8 @@ def _label_temporal_by_feature_robust(
         time_col=time_col_name,
         img_coll=img_coll,
         output_col_name="img_ids",
-        n_before=0,
-        n_after=0,
+        n_before=n_before,
+        n_after=n_after,
         n="images",
     )
 
@@ -172,6 +180,23 @@ def _label_temporal_by_feature_robust(
         ignore_index=False,
         axis=1,
     )
+    # Collapse the image stack (n_before + nearest + n_after) to one row per segment.
+    if n_before or n_after:
+        import numpy as np
+
+        val_cols = [c for c in result.columns if c != "img_date"]
+        for c in val_cols:
+            result[c] = pd.to_numeric(result[c], errors="coerce")
+        img_dt = pd.to_datetime(result["img_date"], utc=True, errors="coerce")
+        target = pd.to_datetime(gdf[time_col_name], utc=True, errors="coerce").reindex(
+            result.index
+        )
+        result["_absdt"] = np.abs(img_dt.values - target.values)
+        reduced = result.groupby(level=0).agg({c: stack_reducer for c in val_cols})
+        reduced["img_date"] = (
+            result.sort_values("_absdt").groupby(level=0)["img_date"].first()
+        )
+        result = reduced
     return result
 
 
@@ -254,6 +279,27 @@ class ImageCollectionCovariate(BaseModel):
             description="Datetime column used to pick the temporally closest image, e.g. 'segment_start'."
         ),
     ] = "segment_start"
+    image_stack: Annotated[
+        int,
+        Field(
+            ge=0,
+            description=(
+                "Number of images to stack around each segment's time. 0 = just the single "
+                "nearest-in-time image. N = the nearest image plus the N images before and N "
+                "after it (2N+1 total), combined per segment with 'stack_reducer'. Increase it "
+                "to smooth noise or fill gaps where the nearest image is cloud-masked."
+            ),
+        ),
+    ] = 0
+    stack_reducer: Annotated[
+        Literal["mean", "median", "min", "max"],
+        Field(
+            description=(
+                "How to combine a multi-image stack (image_stack > 0) into one value per "
+                "segment, ignoring masked/no-data images. Ignored when image_stack = 0."
+            )
+        ),
+    ] = "mean"
     reducer: Annotated[
         str,
         Field(
@@ -273,9 +319,13 @@ class ImageCollectionCovariate(BaseModel):
     scale_factor: Annotated[
         float,
         Field(
-            description="Multiply sampled values by this constant, e.g. 0.0001 to turn raw MODIS NDVI into true NDVI (0-1). 1.0 keeps raw values."
+            description=(
+                "Multiply sampled values by this constant. Defaults to 0.0001, which converts "
+                "raw MODIS NDVI/EVI integers into true NDVI (~ -1..1); set it to 1.0 for data "
+                "that is already in physical units."
+            )
         ),
-    ] = 1.0
+    ] = 0.0001
 
 
 # A plain union (not an explicit discriminator): pydantic selects the branch by the
@@ -374,6 +424,9 @@ def label_with_covariates(
                     "region_reducer": _build_reducer(cov.reducer),
                     "scale": cov.scale,
                     "buffer_m": cov.buffer_m,
+                    "n_before": cov.image_stack,
+                    "n_after": cov.image_stack,
+                    "stack_reducer": cov.stack_reducer,
                 },
                 df_chunk_size=df_chunk_size,
                 max_workers=1,
