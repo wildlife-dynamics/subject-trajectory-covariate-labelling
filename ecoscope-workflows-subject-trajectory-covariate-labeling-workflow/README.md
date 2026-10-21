@@ -5,8 +5,8 @@
 
 ```yaml
 # fingerprint:
-artifacts_sha256_basic: 59ac143da1db9837bfd2d8eabd91ead61317edd1d3fad3edbfe45e8b58ed3e62
-artifacts_sha256_strict: d799cc46b0e3bccab3dabbf8b7b98429f01cd5cb027c824b6fdff00182f84412
+artifacts_sha256_basic: 091cbe76a09a284f585bf22913c317c111e1cc1e11805cde20bcae9daf73a2e2
+artifacts_sha256_strict: 83d1b95b41693a90c51b9cb6432f65bb2827a2911c04082063935999ceddb9d1
 installed_requirements:
 - channel: https://repo.prefix.dev/ecoscope-workflows/
   name: ecoscope-platform
@@ -16,9 +16,9 @@ installed_requirements:
   version: {version: ==0.9.2}
 - channel: https://repo.prefix.dev/ecoscope-workflows-custom/
   name: subject-trajectory-covariate-labelling-tasks
-  version: {version: ==0.3.2}
-params_sha256: 68a359a31e13fd85b2977fb99aed6f54c80311d1ac0e262101c84644d3174e8f
-spec_sha256: bc2df57d79e3388399a9b0f06edaeddaf4c117015f647ba3712df1df58e7cfe6
+  version: {version: ==0.3.4}
+params_sha256: 6a94fe0bd7746237c7a32ce3ee5df5b411116d7ef76887b605295a69282e3bb2
+spec_sha256: 8d08dd06c0c55f5989290352e22502730649df8b3dc9578d1dbf02f3ac6f06c9
 
 ```
 
