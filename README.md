@@ -62,7 +62,14 @@ type:
 - **Image Collection** — a time-matched collection. Same fields as Image, plus:
   - *collection ID* — the GEE asset path (e.g. `MODIS/061/MYD13A1`).
   - *time column* — the segment time used to pick the closest image (`segment_start`).
-  - For each segment, the image **closest in time** is sampled.
+  - *image stack* — how many images to combine around each segment's time. `0` (default)
+    uses only the single closest image; `N` uses the closest image plus the `N` before and
+    `N` after it (2N+1 images). Raise it to smooth noise or fill gaps where the closest
+    image is cloud-masked.
+  - *stack reducer* — how to combine a multi-image stack (`mean`, `median`, `min`, `max`;
+    default `mean`), ignoring masked images. Ignored when *image stack* is `0`.
+  - *scale factor* — defaults to `0.0001` here, turning raw MODIS NDVI/EVI into true
+    NDVI (0-1); set it to `1.0` for bands already in physical units.
 
   IDs are Earth Engine **asset paths**, not band names — entering `NDVI` as a collection
   fails, because `NDVI` is a band, not a collection.
@@ -108,12 +115,15 @@ Written to the workflow results directory:
 ## Notes
 
 - **NDVI (and other scaled products).** MODIS NDVI is stored as an integer scaled by
-  `0.0001` (e.g. `1792` = `0.1792`). To read and plot **true NDVI (0–1)**, set the NDVI
-  covariate's **scale factor** to `0.0001`. Leave it `1.0` for unscaled bands like elevation.
+  `0.0001` (e.g. `1792` = `0.1792`). The Image-Collection **scale factor** now defaults to
+  `0.0001`, so NDVI comes out as **true NDVI (0–1)** with no extra steps; set it to `1.0`
+  for bands already in physical units (e.g. elevation uses the Image type, default `1.0`).
 - **Null covariate values.** A segment is null for a covariate only when there is genuinely
   no valid pixel under it — open water, or a persistently cloud-masked NDVI composite. The
   per-covariate **buffer** (default 250 m for collections, 30 m for images) samples a small
   neighbourhood so short / near-stationary segments and masked edges still return a value;
   set it to `0` for strict single-point sampling (which reintroduces those gaps).
-- **One image per segment.** Image-Collection covariates sample the single closest-in-time
-  image, so there is exactly one value (and one `img_date`) per segment.
+- **Image stack.** By default an Image-Collection covariate samples the single closest-in-time
+  image (one value and one `img_date` per segment). Set *image stack* to `N` > 0 to combine
+  the 2N+1 nearest images with the *stack reducer* — handy to reduce noise or fill
+  cloud-masked gaps; `img_date` then reports the closest image's date.
