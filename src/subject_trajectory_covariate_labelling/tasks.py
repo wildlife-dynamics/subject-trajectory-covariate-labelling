@@ -227,7 +227,11 @@ class StaticImageCovariate(BaseModel):
     reducer: Annotated[
         str,
         Field(
-            description="Region reducer per segment (mean, median, mode, min, max, sum, stdDev, first)."
+            title="Spatial Reducer",
+            description=(
+                "Spatial reducer: how the pixels under each (buffered) segment are combined "
+                "into one value (mean, median, mode, min, max, sum, stdDev, first)."
+            ),
         ),
     ] = "mean"
     scale: Annotated[
@@ -303,7 +307,11 @@ class ImageCollectionCovariate(BaseModel):
     reducer: Annotated[
         str,
         Field(
-            description="Region reducer per segment (mean, median, mode, min, max, sum, stdDev, first)."
+            title="Spatial Reducer",
+            description=(
+                "Spatial reducer: how the pixels under each (buffered) segment are combined "
+                "into one value (mean, median, mode, min, max, sum, stdDev, first)."
+            ),
         ),
     ] = "mean"
     scale: Annotated[
@@ -320,12 +328,12 @@ class ImageCollectionCovariate(BaseModel):
         float,
         Field(
             description=(
-                "Multiply sampled values by this constant. Defaults to 0.0001, which converts "
-                "raw MODIS NDVI/EVI integers into true NDVI (~ -1..1); set it to 1.0 for data "
-                "that is already in physical units."
+                "Multiply sampled values by this constant. 1.0 keeps raw values. Check your "
+                "product's documentation for its scale, e.g. MODIS MYD13A1 NDVI/EVI needs "
+                "0.0001 to convert raw integers into true NDVI (~ -1..1)."
             )
         ),
-    ] = 0.0001
+    ] = 1.0
 
 
 # A plain union (not an explicit discriminator): pydantic selects the branch by the
@@ -666,7 +674,8 @@ def export_labeled_table(
 ) -> AnyGeoDataFrame:
     """Write the labeled table as CSV and/or Parquet, then pass the frame through.
 
-    Parquet keeps the geometry; CSV drops it for a clean tabular file. ``none``
+    Parquet keeps the geometry; CSV drops it for a clean tabular file. Both keep
+    the segment ``id`` (the frame's named index) as a column. ``none``
     writes nothing. Returns ``df`` unchanged so it can still feed other widgets.
 
     Writes go through Ecoscope's own persist helpers (serialize to a buffer, then
@@ -679,20 +688,24 @@ def export_labeled_table(
     import geopandas as gpd
     from ecoscope.platform.serde import _persist_bytes, _persist_text
 
+    # Keep a named index (the trajectory segment ``id``) as a regular column in
+    # BOTH files, so CSV and Parquet carry the same columns and can be joined.
+    table = df.reset_index() if df.index.name is not None else df
+
     if export_format in ("parquet", "both"):
         buffer = io.BytesIO()
         has_geom = any(
-            isinstance(df[c].dtype, gpd.array.GeometryDtype) for c in df.columns
+            isinstance(table[c].dtype, gpd.array.GeometryDtype) for c in table.columns
         )
         if has_geom:
-            gpd.GeoDataFrame(df).to_parquet(buffer, index=False)
+            gpd.GeoDataFrame(table).to_parquet(buffer, index=False)
         else:
-            df.to_parquet(buffer, index=False)
+            table.to_parquet(buffer, index=False)
         _persist_bytes(buffer.getvalue(), root_path, f"{filename}.parquet")
     if export_format in ("csv", "both"):
-        tabular = df.drop(columns=[c for c in ["geometry"] if c in df.columns])
+        tabular = table.drop(columns=[c for c in ["geometry"] if c in table.columns])
         csv_buffer = io.StringIO()
-        tabular.to_csv(csv_buffer)
+        tabular.to_csv(csv_buffer, index=False)
         _persist_text(csv_buffer.getvalue(), root_path, f"{filename}.csv")
     return df
 
