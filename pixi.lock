@@ -152,7 +152,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing-inspection-0.4.4-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.16.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
-      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.4-pyh4616a5c_0.conda
+      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.6-pyh4616a5c_0.conda
       - conda: https://repo.prefix.dev/ecoscope-workflows/noarch/wt-compiler-0.10.2-pyh4616a5c_0.conda
       - conda: https://repo.prefix.dev/ecoscope-workflows/noarch/wt-contracts-0.2.0-pyh4616a5c_0.conda
       osx-arm64:
@@ -244,7 +244,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tk-8.6.13-hbeba79b_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/wcwidth-0.9.2-py311h1f16292_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.4-pyh4616a5c_0.conda
+      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.6-pyh4616a5c_0.conda
       - conda: https://repo.prefix.dev/ecoscope-workflows/noarch/wt-compiler-0.10.2-pyh4616a5c_0.conda
       - conda: https://repo.prefix.dev/ecoscope-workflows/noarch/wt-contracts-0.2.0-pyh4616a5c_0.conda
   default:
@@ -277,7 +277,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2026.7.22-hbd8a1cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/python_abi-3.14-9_cp314.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
-      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.4-pyh4616a5c_0.conda
+      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.6-pyh4616a5c_0.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2026.7.22-hbd8a1cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/python_abi-3.14-9_cp314.conda
@@ -297,7 +297,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/readline-8.3-h8b90a29_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tk-8.6.13-hbeba79b_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.4-pyh4616a5c_0.conda
+      - conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.6-pyh4616a5c_0.conda
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
   build_number: 20
@@ -3103,15 +3103,15 @@ packages:
     - zstd >=1.5.7,<1.6.0a0
   size: 433687
   timestamp: 1786599629846
-- conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.4-pyh4616a5c_0.conda
-  sha256: 0ed07716acad6888213295fd8883b81dbbca8d1afdd71038cf365c14de5996ca
-  md5: 7787f3db2be6221aff0fa8570726a70f
+- conda: https://repo.prefix.dev/ecoscope-workflows-custom/noarch/subject-trajectory-covariate-labelling-tasks-0.3.6-pyh4616a5c_0.conda
+  sha256: a1712eec2a5cec041003f6816928912053fe7339745f1e621756cedcc3212b13
+  md5: 953fc9ccb6ef9b1a9dfc4f9e8dd11109
   depends:
   - python
   license: BSD-3-Clause
   run_exports: {}
-  size: 17560
-  timestamp: 1792589587731
+  size: 17720
+  timestamp: 1792949999709
 - conda: https://repo.prefix.dev/ecoscope-workflows/noarch/wt-compiler-0.10.2-pyh4616a5c_0.conda
   sha256: b835b48bbe4331060b5b673f634f6e20c9acf9ef49ee0b96a7b8663d58ae7307
   md5: fb02a689faaadd15a1fef2de12e15321

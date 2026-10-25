@@ -457,8 +457,8 @@
         },
         "reducer": {
           "default": "mean",
-          "description": "Region reducer per segment (mean, median, mode, min, max, sum, stdDev, first).",
-          "title": "Reducer",
+          "description": "Spatial reducer: how the pixels under each (buffered) segment are combined into one value (mean, median, mode, min, max, sum, stdDev, first).",
+          "title": "Spatial Reducer",
           "type": "string"
         },
         "scale": {
@@ -474,8 +474,8 @@
           "type": "number"
         },
         "scale_factor": {
-          "default": 0.0001,
-          "description": "Multiply sampled values by this constant. Defaults to 0.0001, which converts raw MODIS NDVI/EVI integers into true NDVI (~ -1..1); set it to 1.0 for data that is already in physical units.",
+          "default": 1.0,
+          "description": "Multiply sampled values by this constant. 1.0 keeps raw values. Check your product's documentation for its scale, e.g. MODIS MYD13A1 NDVI/EVI needs 0.0001 to convert raw integers into true NDVI (~ -1..1).",
           "title": "Scale Factor",
           "type": "number"
         }
@@ -508,8 +508,8 @@
         },
         "reducer": {
           "default": "mean",
-          "description": "Region reducer per segment (mean, median, mode, min, max, sum, stdDev, first).",
-          "title": "Reducer",
+          "description": "Spatial reducer: how the pixels under each (buffered) segment are combined into one value (mean, median, mode, min, max, sum, stdDev, first).",
+          "title": "Spatial Reducer",
           "type": "string"
         },
         "scale": {
