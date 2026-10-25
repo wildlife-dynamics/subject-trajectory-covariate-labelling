@@ -54,7 +54,8 @@ type:
   - *name* — the output column name (e.g. `elevation`).
   - *image ID* — the GEE asset path (e.g. `USGS/SRTMGL1_003`).
   - *band* — the band to sample (e.g. `elevation`).
-  - *reducer* — how to reduce pixels under each segment (default `mean`).
+  - *Spatial Reducer* — how the pixels under each (buffered) segment are combined into
+    one value (default `mean`).
   - *scale* — sampling scale in metres (SRTM is 30 m).
   - *buffer* — metres to buffer each segment before sampling (see *Null values*).
   - *scale factor* — multiply the sampled value by a constant (default `1.0`).
@@ -68,8 +69,8 @@ type:
     image is cloud-masked.
   - *stack reducer* — how to combine a multi-image stack (`mean`, `median`, `min`, `max`;
     default `mean`), ignoring masked images. Ignored when *image stack* is `0`.
-  - *scale factor* — defaults to `0.0001` here, turning raw MODIS NDVI/EVI into true
-    NDVI (0-1); set it to `1.0` for bands already in physical units.
+  - *scale factor* — defaults to `1.0` (raw values). Set it to your product's scale,
+    e.g. `0.0001` for MODIS NDVI/EVI (see *Notes*).
 
   IDs are Earth Engine **asset paths**, not band names — entering `NDVI` as a collection
   fails, because `NDVI` is a band, not a collection.
@@ -115,9 +116,10 @@ Written to the workflow results directory:
 ## Notes
 
 - **NDVI (and other scaled products).** MODIS NDVI is stored as an integer scaled by
-  `0.0001` (e.g. `1792` = `0.1792`). The Image-Collection **scale factor** now defaults to
-  `0.0001`, so NDVI comes out as **true NDVI (0–1)** with no extra steps; set it to `1.0`
-  for bands already in physical units (e.g. elevation uses the Image type, default `1.0`).
+  `0.0001` (e.g. `1792` = `0.1792`). The **scale factor** defaults to `1.0` (raw values)
+  for both covariate types, because the right value depends on the product — set it to
+  `0.0001` for MODIS NDVI/EVI to get **true NDVI (−1 to 1)**. Check each product's
+  documentation for its scale.
 - **Null covariate values.** A segment is null for a covariate only when there is genuinely
   no valid pixel under it — open water, or a persistently cloud-masked NDVI composite. The
   per-covariate **buffer** (default 250 m for collections, 30 m for images) samples a small
